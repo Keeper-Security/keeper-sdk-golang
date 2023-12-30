@@ -2,25 +2,73 @@ package main
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"github.com/keeper-security/keeper-sdk-golang/sdk/api"
-	"github.com/keeper-security/keeper-sdk-golang/sdk/auth"
-	"github.com/keeper-security/keeper-sdk-golang/sdk/enterprise"
-	"github.com/keeper-security/keeper-sdk-golang/sdk/helpers"
+	"github.com/keeper-security/keeper-sdk-golang/auth"
+	"github.com/keeper-security/keeper-sdk-golang/enterprise"
+	"github.com/keeper-security/keeper-sdk-golang/vault"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type IAaa interface {
+	Uid() string
+	Value() int64
+}
+
+type aaa struct {
+	uid   string `db:"uid"`
+	value int64  `db:"value"`
+}
+
+func (a *aaa) Uid() string {
+	return a.uid
+}
+func (a *aaa) Value() int64 {
+	return a.value
+}
+
 func main() {
-	//var configStorage = helpers.NewCommanderConfiguration("")
-	var configStorage = helpers.NewJsonConfigurationFile("")
 	var err error
+	//var connectionString = "file::memory:?cache=shared&mode=memory"
+	//var db *sqlx.DB
+	//db, err = sqlx.Connect("sqlite3", connectionString)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//var entityType = reflect.TypeOf((*aaa)(nil))
+	//var ts sqlite.ITableSchema
+	//
+	//ts, err = sqlite.LoadTableSchema(entityType, []string{"uid"}, nil,
+	//	"enterprise_id", sqlite.SqlDataType_Integer)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//var queries []string
+	//queries, err = sqlite.VerifyDatabase(db, []sqlite.ITableSchema{ts}, true)
+	//if len(queries) > 0 {
+	//	panic("create table")
+	//}
+	//var ent storage.IEntityStorage[IAaa, string]
+	//ent, err = sqlite.NewSqliteEntityStorage[IAaa, string](func() *sqlx.DB { return db }, ts, 4)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//err = ent.PutEntities([]IAaa{&aaa{
+	//	uid:   "sdfdsfsdfsdf",
+	//	value: 10,
+	//}})
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	//var configStorage = helpers.NewCommanderConfiguration("")
+	var configStorage = auth.NewJsonConfigurationFile("")
 	var config auth.IKeeperConfiguration
 	if config, err = configStorage.Get(); err != nil {
 		panic(err)
 	}
 
-	var endpoint = helpers.NewKeeperEndpoint(config.LastServer(), configStorage)
-	var loginAuth = helpers.NewLoginAuth(endpoint)
+	var endpoint = auth.NewKeeperEndpoint(config.LastServer(), configStorage)
+	var loginAuth = auth.NewLoginAuth(endpoint)
 	loginAuth.Login(config.LastLogin())
 	var step = loginAuth.Step()
 	if step.LoginState() != auth.LoginState_Connected {
@@ -36,49 +84,17 @@ func main() {
 		panic(err)
 	}
 
-	var connectionString = "file::memory:?cache=shared&mode=memory"
-	//var connectionString = "file:///Users/skolupaev/.keeper/keeper_db.sqlite?cache=shared&mode=rwc"
-	var db *sqlx.DB
-	db, err = sqlx.Connect("sqlite3", connectionString)
-	if err != nil {
-		panic(err)
-	}
-
 	var storage enterprise.IEnterpriseStorage
-	storage, err = enterprise.NewSqliteEnterpriseStorage(func() *sqlx.DB { return db }, int64(keeperAuth.AuthContext().License().EnterpriseId))
+	//storage, err = enterprise.NewSqliteEnterpriseStorage(func() *sqlx.DB { return db }, int64(keeperAuth.AuthContext().License().EnterpriseId))
 	var loader = enterprise.NewEnterpriseLoader(keeperAuth, storage)
 	if err = loader.Load(); err != nil {
 		panic(err)
 	}
-	//var enterpriseData = loader.EnterpriseData()
-	//var teams = enterpriseData.Teams()
-	//var team enterprise.ITeam
-	//teams.GetAllEntities(func(t enterprise.ITeam) bool {
-	//	if strings.ToUpper(t.Name()) == "VAULT" {
-	//		team = t
-	//		return false
-	//	}
-	//	return true
-	//})
-	//if team == nil {
-	//	panic("team not found")
-	//}
-
-	var te = enterprise.NewTeam(api.Base64UrlEncode(api.GenerateUid()))
-	te.SetName("NNNNN")
-	te.SetRestrictShare(true)
-
-	var errors []error
-	var entManager = enterprise.NewSyncEnterpriseManagement(loader)
-	errors = entManager.ModifyTeams([]enterprise.ITeam{te}, nil, nil)
-	//err = enterprise.PutTeams(loader, nil, nil, [][]byte{api.Base64UrlDecode("ojrWg_Rqi1H-CX2bX6EMqA")}, func(_ []byte, er error) {
-	//	errors = append(errors, er)
-	//})
-	if err != nil {
-		panic(err)
-	} else {
-		for _, er := range errors {
-			fmt.Print(er)
+	loader.EnterpriseData().RecordTypes().GetAllEntities(func(x vault.IRecordType) bool {
+		if x.Scope() == vault.RecordTypeScope_Standard {
+			fmt.Printf("- `%s` %s\n", x.Name(), x.Description())
 		}
-	}
+		return true
+	})
+
 }

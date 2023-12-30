@@ -1,0 +1,220 @@
+package enterprise
+
+const (
+	RolePrivilege_ManageNodes          = "MANAGE_NODES"
+	RolePrivilege_ManageUsers          = "MANAGE_USER"
+	RolePrivilege_ManageLicences       = "MANAGE_LICENCES"
+	RolePrivilege_ManageRoles          = "MANAGE_ROLES"
+	RolePrivilege_ManageTeams          = "MANAGE_TEAMS"
+	RolePrivilege_RunSecurityReports   = "RUN_REPORTS"
+	RolePrivilege_ManageBridge         = "MANAGE_BRIDGE"
+	RolePrivilege_ApproveDevice        = "APPROVE_DEVICE"
+	RolePrivilege_ManageRecordTypes    = "MANAGE_RECORD_TYPES"
+	RolePrivilege_RunComplianceReports = "RUN_COMPLIANCE_REPORTS"
+	RolePrivilege_ManageCompanies      = "MANAGE_COMPANIES"
+	RolePrivilege_TransferAccount      = "TRANSFER_ACCOUNT"
+	RolePrivilege_SharingAdministrator = "SHARING_ADMINISTRATOR"
+)
+
+var (
+	rolePrivileges = [...]string{
+		RolePrivilege_ManageNodes, RolePrivilege_ManageUsers, RolePrivilege_ManageLicences,
+		RolePrivilege_ManageRoles, RolePrivilege_ManageTeams, RolePrivilege_RunSecurityReports,
+		RolePrivilege_ManageBridge, RolePrivilege_ApproveDevice, RolePrivilege_ManageRecordTypes,
+		RolePrivilege_RunComplianceReports, RolePrivilege_ManageCompanies, RolePrivilege_TransferAccount,
+		RolePrivilege_SharingAdministrator,
+	}
+)
+
+func AvailableRolePrivileges() []string {
+	return rolePrivileges[:]
+}
+
+/*
+const (
+
+	RoleEnforcementGroup_LoginSettings           = "LOGIN_SETTINGS"
+	RoleEnforcementGroup_AccountSettings         = "ACCOUNT_SETTINGS"
+	RoleEnforcementGroup_TwoFactorAuthentication = "TWO_FACTOR_AUTHENTICATION"
+	RoleEnforcementGroup_PlatformRestriction     = "PLATFORM_RESTRICTION"
+	RoleEnforcementGroup_VaultFeatures           = "VAULT_FEATURES"
+	RoleEnforcementGroup_RecordTypes             = "RECORD_TYPES"
+	RoleEnforcementGroup_SharingAndUploading     = "SHARING_AND_UPLOADING"
+	RoleEnforcementGroup_SharingAndCreating      = "CREATING_AND_SHARING"
+	RoleEnforcementGroup_KeeperFill              = "KEEPER_FILL"
+	RoleEnforcementGroup_Allow_IP_List           = "ALLOW_IP_LIST"
+
+)
+const (
+
+	RoleEnforcementType_Boolean           = "BOOLEAN"
+	RoleEnforcementType_Long              = "LONG"
+	RoleEnforcementType_String            = "STRING"
+	RoleEnforcementType_Json              = "JSON"
+	RoleEnforcementType_JsonArray         = "JSONARRAY"
+	RoleEnforcementType_TernaryDen        = "TERNARY_DEN"
+	RoleEnforcementType_TernaryEdn        = "TERNARY_EDN"
+	RoleEnforcementType_AccountShare      = "ACCOUNT_SHARE"
+	RoleEnforcementType_IP_WhiteList      = "IP_WHITELIST"
+	RoleEnforcementType_TwoFactorDuration = "TWO_FACTOR_DURATION"
+	RoleEnforcementType_RecordTypes       = "RECORD_TYPES"
+
+)
+*/
+type IEnforcement interface {
+	Id() int
+	Name() string
+	ValueType() string
+	Group() string
+}
+type enforcement struct {
+	id        int
+	name      string
+	valueType string
+	group     string
+}
+
+func (e *enforcement) Id() int {
+	return e.id
+}
+func (e *enforcement) Name() string {
+	return e.name
+}
+func (e *enforcement) ValueType() string {
+	return e.valueType
+}
+func (e *enforcement) Group() string {
+	return e.group
+}
+func newEnforcement(name string, id int, valueType string, group string) IEnforcement {
+	return &enforcement{
+		id:        id,
+		name:      name,
+		valueType: valueType,
+		group:     group,
+	}
+}
+
+var (
+	roleEnforcements = []IEnforcement{
+		newEnforcement("MASTER_PASSWORD_MINIMUM_LENGTH", 10, "LONG", "MASTERPASSWORD_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_MINIMUM_SPECIAL", 11, "LONG", "MASTERPASSWORD_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_MINIMUM_UPPER", 12, "LONG", "MASTERPASSWORD_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_MINIMUM_LOWER", 13, "LONG", "MASTERPASSWORD_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_MINIMUM_DIGITS", 14, "LONG", "MASTERPASSWORD_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_RESTRICT_DAYS_BEFORE_REUSE", 16, "LONG", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("REQUIRE_TWO_FACTOR", 20, "BOOLEAN", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_MAXIMUM_DAYS_BEFORE_CHANGE", 22, "LONG", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_EXPIRED_AS_OF", 23, "LONG", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("MINIMUM_PBKDF2_ITERATIONS", 55, "LONG", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("MAX_SESSION_LOGIN_TIME", 24, "LONG", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PERSISTENT_LOGIN", 25, "BOOLEAN", "AUTHENTICATION_ENFORCEMENTS"),
+		newEnforcement("STAY_LOGGED_IN_DEFAULT", 26, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_ALL_OUTGOING", 30, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_ENTERPRISE_OUTGOING", 31, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_EXPORT", 32, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_FILE_UPLOAD", 33, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("REQUIRE_ACCOUNT_SHARE", 34, "ACCOUNT_SHARE", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_ALL_INCOMING", 36, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_ENTERPRISE_INCOMING", 37, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_RECORD_WITH_ATTACHMENTS", 121, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_LINK_SHARING", 122, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_OUTSIDE_OF_ISOLATED_NODES", 123, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_SHARING_RECORD_TO_SHARED_FOLDERS", 124, "BOOLEAN", "SHARING_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_IP_ADDRESSES", 40, "IP_WHITELIST", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("REQUIRE_DEVICE_APPROVAL", 41, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("REQUIRE_ACCOUNT_RECOVERY_APPROVAL", 42, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_VAULT_IP_ADDRESSES", 43, "IP_WHITELIST", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("TIP_ZONE_RESTRICT_ALLOWED_IP_RANGES", 44, "IP_WHITELIST", "ACCOUNT_ENFORCEMENTS"),
+		// newEnforcement("AUTOMATIC_BACKUP_EVERY_X_DAYS", 45, "LONG", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_OFFLINE_ACCESS", 46, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("SEND_INVITE_AT_REGISTRATION", 47, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_EMAIL_CHANGE", 48, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_IOS_FINGERPRINT", 49, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_MAC_FINGERPRINT", 50, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_ANDROID_FINGERPRINT", 51, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_WINDOWS_FINGERPRINT", 83, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("LOGOUT_TIMER_WEB", 52, "LONG", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("LOGOUT_TIMER_MOBILE", 53, "LONG", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("LOGOUT_TIMER_DESKTOP", 54, "LONG", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_WEB_VAULT_ACCESS", 60, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_EXTENSIONS_ACCESS", 61, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_MOBILE_ACCESS", 62, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_DESKTOP_ACCESS", 63, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_MOBILE_IOS_ACCESS", 64, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_MOBILE_ANDROID_ACCESS", 65, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_MOBILE_WINDOWS_PHONE_ACCESS", 66, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_DESKTOP_WIN_ACCESS", 67, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_DESKTOP_MAC_ACCESS", 68, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CHAT_DESKTOP_ACCESS", 84, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CHAT_MOBILE_ACCESS", 85, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_COMMANDER_ACCESS", 88, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_TWO_FACTOR_CHANNEL_TEXT", 70, "BOOLEAN", "TFA_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_TWO_FACTOR_CHANNEL_GOOGLE", 71, "BOOLEAN", "TFA_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_TWO_FACTOR_CHANNEL_DNA", 72, "BOOLEAN", "TFA_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_TWO_FACTOR_CHANNEL_DUO", 73, "BOOLEAN", "TFA_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_TWO_FACTOR_CHANNEL_RSA", 74, "BOOLEAN", "TFA_ENFORCEMENTS"),
+		newEnforcement("TWO_FACTOR_DURATION_WEB", 80, "TWO_FACTOR_DURATION", "TFA_ENFORCEMENTS"),
+		newEnforcement("TWO_FACTOR_DURATION_MOBILE", 81, "TWO_FACTOR_DURATION", "TFA_ENFORCEMENTS"),
+		newEnforcement("TWO_FACTOR_DURATION_DESKTOP", 82, "TWO_FACTOR_DURATION", "TFA_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_TWO_FACTOR_CHANNEL_SECURITY_KEYS", 86, "BOOLEAN", "TFA_ENFORCEMENTS"),
+		newEnforcement("TWO_FACTOR_BY_IP", 87, "JSONARRAY", "TFA_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_DOMAIN_ACCESS", 90, "STRING", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_DOMAIN_CREATE", 91, "STRING", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_HOVER_LOCKS", 92, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PROMPT_TO_LOGIN", 93, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PROMPT_TO_FILL", 94, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_AUTO_SUBMIT", 95, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PROMPT_TO_SAVE", 96, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PROMPT_TO_CHANGE", 97, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_AUTO_FILL", 98, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CREATE_FOLDER", 100, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CREATE_FOLDER_TO_ONLY_SHARED_FOLDERS", 101, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CREATE_IDENTITY_PAYMENT_RECORDS", 102, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("MASK_CUSTOM_FIELDS", 103, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("MASK_NOTES", 104, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("MASK_PASSWORDS_WHILE_EDITING", 105, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("GENERATED_PASSWORD_COMPLEXITY", 106, "STRING", "VAULT_ENFORCEMENTS"),
+		newEnforcement("GENERATED_SECURITY_QUESTION_COMPLEXITY", 109, "STRING", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_IMPORT", 111, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CREATE_RECORD", 112, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CREATE_RECORD_TO_SHARED_FOLDERS", 113, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_CREATE_SHARED_FOLDER", 114, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("DAYS_BEFORE_DELETED_RECORDS_CLEARED_PERM", 107, "LONG", "VAULT_ENFORCEMENTS"),
+		newEnforcement("DAYS_BEFORE_DELETED_RECORDS_AUTO_CLEARED", 108, "LONG", "VAULT_ENFORCEMENTS"),
+		newEnforcement("ALLOW_ALTERNATE_PASSWORDS", 110, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("DISABLE_SETUP_TOUR", 140, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PERSONAL_LICENSE", 141, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("DISABLE_ONBOARDING", 142, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("DISALLOW_V2_CLIENTS", 143, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_IP_AUTOAPPROVAL", 144, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("SEND_BREACH_WATCH_EVENTS", 200, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_BREACH_WATCH", 201, "BOOLEAN", "VAULT_ENFORCEMENTS"),
+		newEnforcement("RESEND_ENTERPRISE_INVITE_IN_X_DAYS", 202, "LONG", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("MASTER_PASSWORD_REENTRY", 203, "JSON", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_ACCOUNT_RECOVERY", 204, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("KEEPER_FILL_HOVER_LOCKS", 205, "TERNARY_DEN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("KEEPER_FILL_AUTO_FILL", 206, "TERNARY_DEN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("KEEPER_FILL_AUTO_SUBMIT", 207, "TERNARY_DEN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("KEEPER_FILL_MATCH_ON_SUBDOMAIN", 208, "TERNARY_EDN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_PROMPT_TO_DISABLE", 209, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_HTTP_FILL_WARNING", 210, "BOOLEAN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_RECORD_TYPES", 211, "RECORD_TYPES", "RECORD_TYPES"),
+		newEnforcement("ALLOW_SECRETS_MANAGER", 212, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("REQUIRE_SELF_DESTRUCT", 213, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("KEEPER_FILL_AUTO_SUGGEST", 214, "TERNARY_DEN", "KEEPER_FILL_ENFORCEMENTS"),
+		newEnforcement("MAXIMUM_RECORD_SIZE", 215, "LONG", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("ALLOW_PAM_ROTATION", 218, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("ALLOW_PAM_DISCOVERY", 219, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("RESTRICT_IMPORT_SHARED_FOLDERS", 220, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+		newEnforcement("REQUIRE_SECURITY_KEY_PIN", 221, "BOOLEAN", "ACCOUNT_ENFORCEMENTS"),
+	}
+)
+
+func AvailableRoleEnforcements(cb func(IEnforcement) bool) {
+	for _, e := range roleEnforcements {
+		if !cb(e) {
+			return
+		}
+	}
+}
