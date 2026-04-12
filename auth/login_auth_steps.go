@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"crypto/ecdh"
 	"crypto/rsa"
 	"encoding/json"
 	"github.com/keeper-security/keeper-sdk-golang/api"
@@ -248,6 +249,30 @@ func (sst *ssoTokenStep) SetSsoToken(token string) error {
 	return api.NewKeeperError("Set SSOToken step is not configured")
 }
 
+func decryptAuthHashDataKey(
+	encryptedDataKeyType proto_auth.EncryptedDataKeyType,
+	encryptedDataKey []byte,
+	password string,
+	salt []byte,
+	iterations uint32,
+	devicePrivateKey *ecdh.PrivateKey,
+) ([]byte, error) {
+	switch encryptedDataKeyType {
+	case proto_auth.EncryptedDataKeyType_BY_PASSWORD:
+		return api.DecryptEncryptionParams(encryptedDataKey, password)
+	case proto_auth.EncryptedDataKeyType_BY_ALTERNATE:
+		encryptionKey := api.DeriveKeyHashV2("data_key", password, salt, iterations)
+		return api.DecryptAesV2(encryptedDataKey, encryptionKey)
+	case proto_auth.EncryptedDataKeyType_BY_DEVICE_PUBLIC_KEY:
+		if devicePrivateKey == nil {
+			return nil, api.NewKeeperInvalidDeviceToken("Missing private key")
+		}
+		return api.DecryptEc(encryptedDataKey, devicePrivateKey)
+	default:
+		return nil, api.NewKeeperError("Unsupported encrypted data key type for validate_auth_hash response")
+	}
+}
+
 func (la *loginAuth) onRequiresAuthHash(response *proto_auth.LoginResponse) (err error) {
 	if len(response.Salt) == 0 {
 		err = api.NewKeeperApiError(
@@ -284,8 +309,14 @@ func (la *loginAuth) onRequiresAuthHash(response *proto_auth.LoginResponse) (err
 			er1 = la.executeRest("authentication/validate_auth_hash", rq, rs, nil)
 			if er1 == nil {
 				er1 = la.onLoggedIn(rs, func(encryptedDataKey []byte) ([]byte, error) {
-					var encryptionKey = api.DeriveKeyHashV2("data_key", password, salt.GetSalt(), uint32(salt.GetIterations()))
-					return api.DecryptAesV2(encryptedDataKey, encryptionKey)
+					return decryptAuthHashDataKey(
+						rs.GetEncryptedDataKeyType(),
+						encryptedDataKey,
+						password,
+						salt.GetSalt(),
+						uint32(salt.GetIterations()),
+						la.loginContext.DevicePrivateKey,
+					)
 				})
 				if er1 == nil {
 					api.GetLogger().Info("Successfully authenticated with Master Password")
